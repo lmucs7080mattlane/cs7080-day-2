@@ -15,7 +15,8 @@ from sqlite3 import dbapi2 as sqlite3
 from hashlib import md5
 from datetime import datetime
 from flask import Flask, request, session, url_for, redirect, \
-     render_template, abort, g as context, flash, _app_ctx_stack
+     render_template, abort, g as context, flash as flash_on_screen, \
+     _app_ctx_stack
 from werkzeug import check_password_hash, generate_password_hash
 
 
@@ -25,7 +26,7 @@ from werkzeug import check_password_hash, generate_password_hash
 
 # configuration
 DATABASE = os.environ['DATABASE_DIR'] + '/minitwit.db'
-PER_PAGE = 30
+TWEETS_PER_PAGE = 30
 DEBUG = True
 SECRET_KEY = 'development key'
 
@@ -42,7 +43,6 @@ app.config.from_envvar('MINITWIT_SETTINGS', silent=True)
 def format_datetime(timestamp):
     """Format a timestamp for display."""
     return datetime.utcfromtimestamp(timestamp).strftime('%Y-%m-%d @ %H:%M')
-
 
 def gravatar_url(email, size=80):
     """Return the gravatar image for the given email address."""
@@ -134,7 +134,7 @@ def public_timeline():
             where message.author_id = user.user_id
             order by message.pub_date desc limit ?
             ''',
-            [PER_PAGE]
+            [TWEETS_PER_PAGE]
         )
     )
 
@@ -153,7 +153,7 @@ def add_message():
             (session['user_id'], request.form['text'], int(time.time()))
         )
         database.commit()
-        flash('Your message was recorded')
+        flash_on_screen('Your message was recorded')
     return redirect(url_for('public_timeline'))
 
 
@@ -174,7 +174,7 @@ def login():
         elif not check_password_hash(user['pw_hash'], request.form['password']):
             error = 'Invalid password'
         else:
-            flash('You were logged in')
+            flash_on_screen('You were logged in')
             session['user_id'] = user['user_id']
             return redirect(url_for('public_timeline'))
     return render_template('login.html', error=error)
@@ -183,8 +183,6 @@ def login():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     """Registers the user."""
-    if context.user:
-        return redirect(url_for('public_timeline'))
     error = None
     if request.method == 'POST':
         if not request.form['username']:
@@ -199,6 +197,8 @@ def register():
         elif get_user_id(request.form['username']) is not None:
             error = 'The username is already taken'
         else:
+            # If the registration data is valid, 
+            # add the user to the database
             database = get_database()
             database.execute(
                 '''
@@ -209,14 +209,14 @@ def register():
                  generate_password_hash(request.form['password'])]
             )
             database.commit()
-            flash('You were successfully registered and can login now')
+            flash_on_screen('You were successfully registered and can login now')
             return redirect(url_for('login'))
     return render_template('register.html', error=error)
 
 @app.route('/logout')
 def logout():
     """Logs the user out."""
-    flash('You were logged out')
+    flash_on_screen('You were logged out')
     session.pop('user_id', None)
     return redirect(url_for('public_timeline'))
 
