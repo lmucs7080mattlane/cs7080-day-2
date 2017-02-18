@@ -19,6 +19,10 @@ from flask import Flask, request, session, url_for, redirect, \
 from werkzeug import check_password_hash, generate_password_hash
 
 
+################################################################################
+# Configuration
+################################################################################
+
 # configuration
 DATABASE = os.environ['DATABASE_DIR'] + '/minitwit.db'
 PER_PAGE = 30
@@ -30,6 +34,25 @@ app = Flask(__name__)
 app.config.from_object(__name__)
 app.config.from_envvar('MINITWIT_SETTINGS', silent=True)
 
+
+################################################################################
+# Helper functions
+################################################################################
+
+def format_datetime(timestamp):
+    """Format a timestamp for display."""
+    return datetime.utcfromtimestamp(timestamp).strftime('%Y-%m-%d @ %H:%M')
+
+
+def gravatar_url(email, size=80):
+    """Return the gravatar image for the given email address."""
+    return 'https://www.gravatar.com/avatar/%s?d=identicon&s=%d' % \
+        (md5(email.strip().lower().encode('utf-8')).hexdigest(), size)
+
+
+################################################################################
+# Functions to deal with the database
+################################################################################
 
 def get_database():
     """Opens a new database connection if there is none yet for the
@@ -82,16 +105,9 @@ def get_user_id(username):
     return rv[0] if rv else None
 
 
-def format_datetime(timestamp):
-    """Format a timestamp for display."""
-    return datetime.utcfromtimestamp(timestamp).strftime('%Y-%m-%d @ %H:%M')
-
-
-def gravatar_url(email, size=80):
-    """Return the gravatar image for the given email address."""
-    return 'https://www.gravatar.com/avatar/%s?d=identicon&s=%d' % \
-        (md5(email.strip().lower().encode('utf-8')).hexdigest(), size)
-
+################################################################################
+# HTTP request handler functions
+################################################################################
 
 @app.before_request
 def before_request():
@@ -178,7 +194,6 @@ def register():
             flash('You were successfully registered and can login now')
             return redirect(url_for('login'))
     return render_template('register.html', error=error)
-
 
 @app.route('/logout')
 def logout():
