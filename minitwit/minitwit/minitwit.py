@@ -15,7 +15,7 @@ from sqlite3 import dbapi2 as sqlite3
 from hashlib import md5
 from datetime import datetime
 from flask import Flask, request, session, url_for, redirect, \
-     render_template, abort, g, flash, _app_ctx_stack
+     render_template, abort, g as context, flash, _app_ctx_stack
 from werkzeug import check_password_hash, generate_password_hash
 
 
@@ -46,8 +46,10 @@ def format_datetime(timestamp):
 
 def gravatar_url(email, size=80):
     """Return the gravatar image for the given email address."""
-    return 'https://www.gravatar.com/avatar/%s?d=identicon&s=%d' % \
-        (md5(email.strip().lower().encode('utf-8')).hexdigest(), size)
+    return 'https://www.gravatar.com/avatar/{}?d=identicon&s={}'.format(
+        md5(email.strip().lower().encode('utf-8')).hexdigest(),
+        size
+    )
 
 
 ################################################################################
@@ -65,7 +67,6 @@ def get_database():
         top.sqlite_db.row_factory = sqlite3.Row
     return top.sqlite_db
 
-
 @app.teardown_appcontext
 def close_database(exception):
     """Closes the database again at the end of the request."""
@@ -73,15 +74,12 @@ def close_database(exception):
     if hasattr(top, 'sqlite_db'):
         top.sqlite_db.close()
 
-
 def init_database():
     """Initializes the database."""
     database = get_database()
     with app.open_resource('schema.sql', mode='r') as f:
         database.cursor().executescript(f.read())
     database.commit()
-    print(query_database('select * from user'))
-
 
 @app.cli.command('initdb')
 def initdatabase_command():
@@ -89,7 +87,6 @@ def initdatabase_command():
     print('Initialising the database')
     init_database()
     print('Initialized the database.')
-
 
 def query_database(query, args=(), one=False):
     """Queries the database and returns a list of dictionaries."""
@@ -100,8 +97,11 @@ def query_database(query, args=(), one=False):
 
 def get_user_id(username):
     """Convenience method to look up the id for a username."""
-    rv = query_database('select user_id from user where username = ?',
-                  [username], one=True)
+    rv = query_database(
+        'select user_id from user where username = ?',
+        [username],
+        one=True
+    )
     return rv[0] if rv else None
 
 
@@ -111,24 +111,32 @@ def get_user_id(username):
 
 @app.before_request
 def before_request():
-    g.user = None
+    # Before every HTTP request is handled by its specific function,
+    # this function is run to see if the requesting user exists in the
+    # database. If the user does exist the specific handling function
+    # can then get the user's name from 'context.user'
+    context.user = None
     if 'user_id' in session:
-        g.user = query_database('select * from user where user_id = ?',
-                          [session['user_id']], one=True)
+        context.user = query_database(
+            'select * from user where user_id = ?',
+            [session['user_id']],
+            one=True
+        )
 
 @app.route('/')
-def timeline():
-    """Redirects to the public timeline
-    """
-    return redirect(url_for('public_timeline'))
-
-@app.route('/public')
 def public_timeline():
     """Displays the latest messages of all users."""
-    return render_template('timeline.html', messages=query_database('''
-        select message.*, user.* from message, user
-        where message.author_id = user.user_id
-        order by message.pub_date desc limit ?''', [PER_PAGE]))
+    return render_template(
+        'timeline.html',
+        messages=query_database(
+            '''
+            select message.*, user.* from message, user
+            where message.author_id = user.user_id
+            order by message.pub_date desc limit ?
+            ''',
+            [PER_PAGE]
+        )
+    )
 
 @app.route('/add_message', methods=['POST'])
 def add_message():
@@ -137,40 +145,46 @@ def add_message():
         abort(401)
     if request.form['text']:
         database = get_database()
-        database.execute('''insert into message (author_id, text, pub_date)
-          values (?, ?, ?)''', (session['user_id'], request.form['text'],
-                                int(time.time())))
+        database.execute(
+            '''
+            insert into message (author_id, text, pub_date)
+            values (?, ?, ?)
+            ''',
+            (session['user_id'], request.form['text'], int(time.time()))
+        )
         database.commit()
         flash('Your message was recorded')
-    return redirect(url_for('timeline'))
+    return redirect(url_for('public_timeline'))
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     """Logs the user in."""
-    if g.user:
-        return redirect(url_for('timeline'))
+    if context.user:
+        return redirect(url_for('public_timeline'))
     error = None
     if request.method == 'POST':
-        user = query_database('''select * from user where
-            username = ?''', [request.form['username']], one=True)
+        user = query_database(
+            'select * from user where username = ?',
+            [request.form['username']],
+            one=True
+        )
         if user is None:
             error = 'Invalid username'
-        elif not check_password_hash(user['pw_hash'],
-                                     request.form['password']):
+        elif not check_password_hash(user['pw_hash'], request.form['password']):
             error = 'Invalid password'
         else:
             flash('You were logged in')
             session['user_id'] = user['user_id']
-            return redirect(url_for('timeline'))
+            return redirect(url_for('public_timeline'))
     return render_template('login.html', error=error)
 
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     """Registers the user."""
-    if g.user:
-        return redirect(url_for('timeline'))
+    if context.user:
+        return redirect(url_for('public_timeline'))
     error = None
     if request.method == 'POST':
         if not request.form['username']:
@@ -186,10 +200,14 @@ def register():
             error = 'The username is already taken'
         else:
             database = get_database()
-            database.execute('''insert into user (
-              username, email, pw_hash) values (?, ?, ?)''',
-              [request.form['username'], request.form['email'],
-               generate_password_hash(request.form['password'])])
+            database.execute(
+                '''
+                insert into user (username, email, pw_hash)
+                values (?, ?, ?)
+                ''',
+                [request.form['username'], request.form['email'],
+                 generate_password_hash(request.form['password'])]
+            )
             database.commit()
             flash('You were successfully registered and can login now')
             return redirect(url_for('login'))
