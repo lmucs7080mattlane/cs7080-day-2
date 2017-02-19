@@ -1,4 +1,4 @@
-from flask import Flask, request, abort, jsonify
+from flask import Flask, request, abort, jsonify, render_template_string
 app = Flask(__name__)
 
 animals = {}
@@ -22,17 +22,17 @@ def is_animal(possible_animal):
         return False
     return True
 
-@app.route("/animals/", methods = ['GET'])
+@app.route('/animals/', methods = ['GET'])
 def get_animals():
     return jsonify(animals)
 
-@app.route("/animals/<animal_id>", methods = ['GET'])
+@app.route('/animals/<animal_id>', methods = ['GET'])
 def get_animal(animal_id):
     if animal_id not in animals:
         abort(404)
     return jsonify(animals[animal_id])
 
-@app.route("/animals/", methods = ['POST'])
+@app.route('/animals/', methods = ['POST'])
 def post_animal():
     animal_id = generate_animal_id()
     request_content = request.get_json()
@@ -41,7 +41,7 @@ def post_animal():
     animals[animal_id] = request_content
     return jsonify(animal_id)
 
-@app.route("/animals/<animal_id>", methods = ['PUT'])
+@app.route('/animals/<animal_id>', methods = ['PUT'])
 def put_animal(animal_id):
     if animal_id not in animals:
         abort(404)
@@ -51,13 +51,35 @@ def put_animal(animal_id):
     animals[animal_id] = request_content
     return '', 200
 
-@app.route("/animals/<animal_id>", methods = ['DELETE'])
+@app.route('/animals/<animal_id>', methods = ['DELETE'])
 def delete_animal(animal_id):
     if animal_id not in animals:
         abort(404)
     del animals[animal_id]
     return '', 200
 
+@app.route('/', methods = ['GET'])
+def get_webpage():
+    html = '''
+    <table>
+       <tr>
+            <th> KEY </th>
+            <td> species </td>
+            <td> name </td>
+            <td> eat </td>
+       </tr>
+    {% for key, value in animals.items() %}
+       <tr>
+            <th> {{ key }} </th>
+            <td> {{ value['species'] }} </td>
+            <td> {{ value['name'] }} </td>
+            <td> {{ value['eats'] }} </td>
+       </tr>
+    {% endfor %}
+    </table>
+    '''
+    return render_template_string(html, animals=animals)
 
-if __name__ == "__main__":
+
+if __name__ == '__main__':
     app.run()
