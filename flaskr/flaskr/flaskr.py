@@ -84,7 +84,7 @@ def add_entry():
     db.execute('insert into entries (title, text) values (?, ?)',
                [request.form['title'], request.form['text']])
     db.commit()
-    flash('New entry was successfully posted')
+    flash('Cheers for the post, next time write something a bit longer')
     return redirect(url_for('show_entries'))
 
 
@@ -99,12 +99,14 @@ def login():
         else:
             session['logged_in'] = True
             flash('You were logged in')
+            # This line only gets called on a POST request
             return redirect(url_for('show_entries'))
+    # This line below only gets called on a GET request
     return render_template('login.html', error=error)
 
 
 @app.route('/logout')
 def logout():
     session.pop('logged_in', None)
-    flash('You were logged out')
+    flash('Bye Then!')
     return redirect(url_for('show_entries'))
