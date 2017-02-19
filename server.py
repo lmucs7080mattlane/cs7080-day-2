@@ -117,14 +117,14 @@ def get_webpage():
             <th> ID </th>
             <td> species </td>
             <td> name </td>
-            <td> eat </td>
+            <td> eats </td>
        </tr>
     {% for key, value in animals.items() %}
        <tr>
             <th> {{ key }} </th>
-            <td> {{ value['specIES'] }} </td>
-            <td> {{ value['namez'] }} </td>
-            <td> {{ value['foods'] }} </td>
+            <td> {{ value['species'] }} </td>
+            <td> {{ value['name'] }} </td>
+            <td> {{ value['eats'] }} </td>
        </tr>
     {% endfor %}
     </table>
