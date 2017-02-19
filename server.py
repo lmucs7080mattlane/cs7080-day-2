@@ -39,69 +39,65 @@ def return_error(code):
 def return_empty_success():
     return return_error(200)
 
-@app.route('/animals/', methods = ['GET'])
-def get_animals():
-    return jsonify(animals)
+@app.route('/animals/', methods = ['GET', 'POST'])
+def animals():
+    if request.method == 'GET':
+        return jsonify(animals)
+    elif request.method == 'POST':
+        # This should insert a new animal with a new
+        # animal id (created using generate_animal_id) and
+        # then return the animal_id to the requester
+        #
+        # The new animal comes from the 'body' of the request
+        # and can be retrieved using 'request.get_json()'
+        #
+        # You can check if it is a valid animal using the
+        # function is_animal(possible_animal)
+        #
+        # If the request did not contain a valid animal,
+        # return a 400 or 'BadRequest' error code using
+        # the return_error method e.g. 'return return_error(400)'
+        raise NotImplementedError()
 
-@app.route('/animals/<animal_id>', methods = ['GET'])
+@app.route('/animals/<animal_id>', methods = ['GET', 'PUT', 'DELETE'])
 def get_animal(animal_id):
-    # This should return the single animal from the
-    # animals dictionary that has the same animal_id.
-    #
-    # If there is no matching animal, return a 404
-    # or 'NotFoundError' using the return_error function
-    raise NotImplementedError()
-
-@app.route('/animals/', methods = ['POST'])
-def post_animal():
-    # This should insert a new animal with a new
-    # animal id (created using generate_animal_id) and
-    # then return the animal_id to the requester
-    #
-    # The new animal comes from the 'body' of the request
-    # and can be retrieved using 'request.get_json()'
-    #
-    # You can check if it is a valid animal using the
-    # function is_animal(possible_animal)
-    #
-    # If the request did not contain a valid animal,
-    # return a 400 or 'BadRequest' error code using
-    # the return_error method e.g. 'return return_error(400)'
-    raise NotImplementedError()
-
-@app.route('/animals/<animal_id>', methods = ['PUT'])
-def put_animal(animal_id):
-    # This should update an existing animal with a new animal.
-    # The animal to be updated should be identified by the
-    # animal_id.
-    #
-    # If there is no matching animal, return a 404
-    # or 'NotFoundError' using the return_error function
-    #
-    # The new animal comes from the 'body' of the request
-    # and can be retrieved using 'request.get_json()'
-    #
-    # You can check if it is a valid animal using the
-    # function is_animal(possible_animal)
-    #
-    # If the request did not contain a valid animal,
-    # return a 400 or 'BadRequest' error code using
-    # the return_error method e.g. 'return return_error(400)'
-    raise NotImplementedError()
-
-@app.route('/animals/<animal_id>', methods = ['DELETE'])
-def delete_animal(animal_id):
-    # This should delete an existing animal from the
-    # animals dictionary.
-    # The animal to be updated should be identified by the
-    # animal_id.
-    #
-    # If there is no matching animal, return a 404
-    # or 'NotFoundError' using the return_error function
-    #
-    # If there is a match and the animal is deleted
-    # call 'return return_empty_success()'
-    return '', 200
+    if request.method == 'GET':
+        # This should return the single animal from the
+        # animals dictionary that has the same animal_id.
+        #
+        # If there is no matching animal, return a 404
+        # or 'NotFoundError' using the return_error function
+        raise NotImplementedError()
+    elif request.method == 'PUT':
+        # This should update an existing animal with a new animal.
+        # The animal to be updated should be identified by the
+        # animal_id.
+        #
+        # If there is no matching animal, return a 404
+        # or 'NotFoundError' using the return_error function
+        #
+        # The new animal comes from the 'body' of the request
+        # and can be retrieved using 'request.get_json()'
+        #
+        # You can check if it is a valid animal using the
+        # function is_animal(possible_animal)
+        #
+        # If the request did not contain a valid animal,
+        # return a 400 or 'BadRequest' error code using
+        # the return_error method e.g. 'return return_error(400)'
+        raise NotImplementedError()
+    elif request.method == 'DELETE':
+        # This should delete an existing animal from the
+        # animals dictionary.
+        # The animal to be updated should be identified by the
+        # animal_id.
+        #
+        # If there is no matching animal, return a 404
+        # or 'NotFoundError' using the return_error function
+        #
+        # If there is a match and the animal is deleted
+        # call 'return return_empty_success()'
+        raise NotImplementedError()
 
 @app.route('/', methods = ['GET'])
 def get_webpage():
