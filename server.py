@@ -40,7 +40,7 @@ def return_empty_success():
     return return_error(200)
 
 @app.route('/animals/', methods = ['GET', 'POST'])
-def animals():
+def handle_animals():
     if request.method == 'GET':
         return jsonify(animals)
     elif request.method == 'POST':
@@ -60,7 +60,7 @@ def animals():
         raise NotImplementedError()
 
 @app.route('/animals/<animal_id>', methods = ['GET', 'PUT', 'DELETE'])
-def get_animal(animal_id):
+def handle_animal(animal_id):
     if request.method == 'GET':
         # This should return the single animal from the
         # animals dictionary that has the same animal_id.
