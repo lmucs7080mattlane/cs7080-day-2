@@ -99,6 +99,14 @@ def get_webpage():
         });
     </script>
 
+    <p>
+    Every 1 second (or 1000ms) the update_table javascript function is called.
+    This function empties the table of all contents and then calls the
+    GET /animals/ route. It then generates a whole new table based on what
+    animals were received in the GET /animals/ response.
+    </p>
+
+    <br/><br/>
     <table id="animals"/>
     '''
     return render_template_string(html, animals=animals)
