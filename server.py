@@ -20,6 +20,9 @@ def hello():
     
     #return 'my simple message'
     
+    # ... and delete this line
+    pass
+    
 
 if __name__ == "__main__":
     app.run()
