@@ -1,13 +1,24 @@
 from flask import Flask, request, abort, jsonify, render_template_string
 app = Flask(__name__)
 
-animals = {}
-
-animal_id_counter = 0;
+animal_id_counter = 0
 def generate_animal_id():
     global animal_id_counter
     animal_id_counter += 1
     return str(animal_id_counter)
+
+animals = {
+    generate_animal_id(): {
+        'name': 'dave',
+        'species': 'deer',
+        'eats': 'grass'
+    },
+    generate_animal_id(): {
+        'name': 'bob',
+        'species': 'bear',
+        'eats': 'salmon'
+    }
+}
 
 def is_animal(possible_animal):
     if type(possible_animal) != dict:
@@ -22,40 +33,74 @@ def is_animal(possible_animal):
         return False
     return True
 
+def return_error(code):
+    return ('', code)
+
+def return_empty_success():
+    return return_error(200)
+
 @app.route('/animals/', methods = ['GET'])
 def get_animals():
     return jsonify(animals)
 
 @app.route('/animals/<animal_id>', methods = ['GET'])
 def get_animal(animal_id):
-    if animal_id not in animals:
-        abort(404)
-    return jsonify(animals[animal_id])
+    # This should return the single animal from the
+    # animals dictionary that has the same animal_id.
+    #
+    # If there is no matching animal, return a 404
+    # or 'NotFoundError' using the return_error function
+    raise NotImplementedError()
 
 @app.route('/animals/', methods = ['POST'])
 def post_animal():
-    animal_id = generate_animal_id()
-    request_content = request.get_json()
-    if not is_animal(request_content):
-        abort(400)
-    animals[animal_id] = request_content
-    return jsonify(animal_id)
+    # This should insert a new animal with a new
+    # animal id (created using generate_animal_id) and
+    # then return the animal_id to the requester
+    #
+    # The new animal comes from the 'body' of the request
+    # and can be retrieved using 'request.get_json()'
+    #
+    # You can check if it is a valid animal using the
+    # function is_animal(possible_animal)
+    #
+    # If the request did not contain a valid animal,
+    # return a 400 or 'BadRequest' error code using
+    # the return_error method e.g. 'return return_error(400)'
+    raise NotImplementedError()
 
 @app.route('/animals/<animal_id>', methods = ['PUT'])
 def put_animal(animal_id):
-    if animal_id not in animals:
-        abort(404)
-    request_content = request.get_json()
-    if not is_animal(request_content):
-        abort(400)
-    animals[animal_id] = request_content
-    return '', 200
+    # This should update an existing animal with a new animal.
+    # The animal to be updated should be identified by the
+    # animal_id.
+    #
+    # If there is no matching animal, return a 404
+    # or 'NotFoundError' using the return_error function
+    #
+    # The new animal comes from the 'body' of the request
+    # and can be retrieved using 'request.get_json()'
+    #
+    # You can check if it is a valid animal using the
+    # function is_animal(possible_animal)
+    #
+    # If the request did not contain a valid animal,
+    # return a 400 or 'BadRequest' error code using
+    # the return_error method e.g. 'return return_error(400)'
+    raise NotImplementedError()
 
 @app.route('/animals/<animal_id>', methods = ['DELETE'])
 def delete_animal(animal_id):
-    if animal_id not in animals:
-        abort(404)
-    del animals[animal_id]
+    # This should delete an existing animal from the
+    # animals dictionary.
+    # The animal to be updated should be identified by the
+    # animal_id.
+    #
+    # If there is no matching animal, return a 404
+    # or 'NotFoundError' using the return_error function
+    #
+    # If there is a match and the animal is deleted
+    # call 'return return_empty_success()'
     return '', 200
 
 @app.route('/', methods = ['GET'])
@@ -63,7 +108,7 @@ def get_webpage():
     html = '''
     <table>
        <tr>
-            <th> KEY </th>
+            <th> ID </th>
             <td> species </td>
             <td> name </td>
             <td> eat </td>
@@ -71,9 +116,9 @@ def get_webpage():
     {% for key, value in animals.items() %}
        <tr>
             <th> {{ key }} </th>
-            <td> {{ value['species'] }} </td>
-            <td> {{ value['name'] }} </td>
-            <td> {{ value['eats'] }} </td>
+            <td> {{ value['specIES'] }} </td>
+            <td> {{ value['namez'] }} </td>
+            <td> {{ value['foods'] }} </td>
        </tr>
     {% endfor %}
     </table>
