@@ -61,22 +61,45 @@ def delete_animal(animal_id):
 @app.route('/', methods = ['GET'])
 def get_webpage():
     html = '''
-    <table>
-       <tr>
-            <th> KEY </th>
-            <td> species </td>
-            <td> name </td>
-            <td> eat </td>
-       </tr>
-    {% for key, value in animals.items() %}
-       <tr>
-            <th> {{ key }} </th>
-            <td> {{ value['species'] }} </td>
-            <td> {{ value['name'] }} </td>
-            <td> {{ value['eats'] }} </td>
-       </tr>
-    {% endfor %}
-    </table>
+    <!doctype html>
+    <title>jQuery Example</title>
+    <script type="text/javascript"
+      src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+    <script type="text/javascript">
+      var $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+    </script>
+    <script type="text/javascript">
+        $(function() {
+            var update_table = function() {
+                $.getJSON($SCRIPT_ROOT + '/animals/', {}, function(data) {
+                    $("#animals").empty();
+                    $("#animals").append(`
+                        <tr>
+                            <th> KEY </th>
+                            <td> species </td>
+                            <td> name </td>
+                            <td> eats </td>
+                        </tr>
+                    `);
+                    for (var key in data){
+                        $("#animals").append(`
+                            <tr>
+                                <th> ` + key + `</th>
+                                <td> ` + data[key].species +` </td>
+                                <td> ` + data[key].name +` </td>
+                                <td> ` + data[key].eats +` </td>
+                            </tr>
+                        `);
+                    }
+                    setTimeout(update_table, 1000);
+                });
+            };
+
+            setTimeout(update_table, 1000);
+        });
+    </script>
+
+    <table id="animals"/>
     '''
     return render_template_string(html, animals=animals)
 
