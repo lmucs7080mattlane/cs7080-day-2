@@ -121,6 +121,9 @@ def get_webpage():
     </script>
     <script type="text/javascript">
         $(function() {
+            // Once every 500 milliseconds,
+            // call GET /animals/ and update
+            // the table caled 'animals'
             var update_table = function() {
                 $.getJSON($SCRIPT_ROOT + '/animals/', {}, function(data) {
                     $("#animals").empty();
@@ -145,8 +148,40 @@ def get_webpage():
                     setTimeout(update_table, 500);
                 });
             };
-
             setTimeout(update_table, 500);
+
+            // Watch the new animal form for submissions
+            // When we see a form submission, call POST /animals/
+            // with the form's data
+            $( "#new_animal_form" ).submit(function(event) {
+                event.preventDefault(); // Stop the form from submitting normally
+
+                var $form = $(this); // Get the form
+
+                // Get the data from the form
+                var name = $form.find( "input[name='name']" ).val();
+                var species = $form.find( "input[name='species']" ).val();
+                var eats = $form.find( "input[name='eats']" ).val();
+
+                // The REST API address
+                var url = "/animals/"
+
+                // Send the data using the /animals/ POST method
+                $.ajax(
+                    {
+                        url:url,
+                        type:"POST",
+                        data: JSON.stringify({
+                            name: name,
+                            species: species,
+                            eats: eats
+                        }),
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "json",
+                        success: function(){ return; }
+                    }
+                );
+            });
         });
     </script>
 
@@ -169,35 +204,6 @@ def get_webpage():
     <table id="animals"> </table>
 
     <script type="text/javascript">
-        $( "#new_animal_form" ).submit(function(event) {
-            event.preventDefault(); // Stop the form from submitting normally
-
-            var $form = $(this); // Get the form
-
-            // Get the data from the form
-            var name = $form.find( "input[name='name']" ).val();
-            var species = $form.find( "input[name='species']" ).val();
-            var eats = $form.find( "input[name='eats']" ).val();
-
-            // The REST API address
-            var url = "/animals/"
-
-            // Send the data using the /animals/ POST method
-            $.ajax(
-                {
-                    url:url,
-                    type:"POST",
-                    data: JSON.stringify({
-                        name: name,
-                        species: species,
-                        eats: eats
-                    }),
-                    contentType: "application/json; charset=utf-8",
-                    dataType: "json",
-                    success: function(){ return; }
-                }
-            );
-        });
     </script>
     '''
     return render_template_string(html, animals=animals)
