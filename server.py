@@ -115,7 +115,7 @@ def get_webpage():
     <!doctype html>
     <title>jQuery Example</title>
     <script type="text/javascript"
-      src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+      src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.0/jquery.min.js"></script>
     <script type="text/javascript">
       var $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
     </script>
@@ -142,23 +142,63 @@ def get_webpage():
                             </tr>
                         `);
                     }
-                    setTimeout(update_table, 1000);
+                    setTimeout(update_table, 500);
                 });
             };
 
-            setTimeout(update_table, 1000);
+            setTimeout(update_table, 500);
         });
     </script>
 
+    <h1>Add an Animal:</h1>
+    <form action="/animals/" id="new_animal_form">
+        Name:<input type="text" name="name" placeholder="name of animal"><br/>
+        Species:<input type="text" name="species" placeholder="species"><br/>
+        Eats:<input type="text" name="eats" placeholder="what food the animal eats"><br/>
+        <input type="submit" value="add animal">
+    </form>
+
+    <h1>Current Animals</h1>
     <p>
-    Every 1 second (or 1000ms) the update_table javascript function is called.
+    Every 0.5 seconds (or 500ms) the update_table javascript function is called.
     This function empties the table of all contents and then calls the
     GET /animals/ route. It then generates a whole new table based on what
     animals were received in the GET /animals/ response.
     </p>
 
-    <br/><br/>
-    <table id="animals"/>
+    <table id="animals"> </table>
+
+    <script type="text/javascript">
+        $( "#new_animal_form" ).submit(function(event) {
+            event.preventDefault(); // Stop the form from submitting normally
+
+            var $form = $(this); // Get the form
+
+            // Get the data from the form
+            var name = $form.find( "input[name='name']" ).val();
+            var species = $form.find( "input[name='species']" ).val();
+            var eats = $form.find( "input[name='eats']" ).val();
+
+            // The REST API address
+            var url = "/animals/"
+
+            // Send the data using the /animals/ POST method
+            $.ajax(
+                {
+                    url:url,
+                    type:"POST",
+                    data: JSON.stringify({
+                        name: name,
+                        species: species,
+                        eats: eats
+                    }),
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function(){ return; }
+                }
+            );
+        });
+    </script>
     '''
     return render_template_string(html, animals=animals)
 
