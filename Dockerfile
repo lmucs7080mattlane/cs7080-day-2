@@ -1,6 +1,6 @@
 FROM python:3.6-slim
 
-RUN pip3 install Flask
+RUN pip3 install Flask pymongo
 
 RUN mkdir /opt/code
 WORKDIR /opt/code

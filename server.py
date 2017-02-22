@@ -1,24 +1,19 @@
 from flask import Flask, request, abort, jsonify, render_template_string
+from pymongo import MongoClient
+from bson.objectid import ObjectId
 app = Flask(__name__)
 
-animal_id_counter = 0
-def generate_animal_id():
-    global animal_id_counter
-    animal_id_counter += 1
-    return str(animal_id_counter)
 
-animals = {
-    generate_animal_id(): {
-        'name': 'dave',
-        'species': 'deer',
-        'eats': 'grass'
-    },
-    generate_animal_id(): {
-        'name': 'bob',
-        'species': 'bear',
-        'eats': 'salmon'
-    }
-}
+# http://docs.mongodb.com/getting-started/python/client/
+mongo_database = None
+def connect_to_mongo():
+    global mongo_database
+    client = MongoClient('mongodb://mongo:27017/animals')
+    # Cheap and easy command to test the connection
+    client.admin.command('ismaster')
+    mongo_database = client.get_default_database()
+connect_to_mongo()
+
 
 def is_animal(possible_animal):
     if type(possible_animal) != dict:
@@ -42,12 +37,17 @@ def return_empty_success():
 @app.route('/animals/', methods = ['GET', 'POST'])
 def handle_animals():
     if request.method == 'GET':
+        db_animals = [animal for animal in mongo_database.animals.find()]
+        animals = {}
+        for animal in db_animals:
+            animal_id = str(animal['_id'])
+            del animal['_id']
+            animals[animal_id] = animal
         return jsonify(animals)
+
     elif request.method == 'POST':
         # This should insert a new animal with a new
-        # animal id (created using generate_animal_id) and
-        # then return the animal_id to the requester
-        new_animal_id = generate_animal_id()
+        # animal id
         # The new animal comes from the 'body' of the request
         # and can be retrieved using 'request.get_json()'
         my_new_animal = request.get_json()
@@ -58,19 +58,25 @@ def handle_animals():
             # return a 400 or 'BadRequest' error code using
             # the return_error method e.g. 'return return_error(400)'
             return return_error(400)
-        animals[new_animal_id] = my_new_animal
-        return new_animal_id
+
+        result = mongo_database.animals.insert_one(my_new_animal)
+
+        return jsonify(str(result.inserted_id))
 
 @app.route('/animals/<animal_id>', methods = ['GET', 'PUT', 'DELETE'])
 def handle_animal(animal_id):
     if request.method == 'GET':
-        # This should return the single animal from the
-        # animals dictionary that has the same animal_id.
+        # This should return the single matching
+        # animal from mongodb.
         # If there is no matching animal, return a 404
         # or 'NotFoundError' using the return_error function
-        if animal_id not in animals:
+        my_animal = mongo_database.animals.find_one(
+            {'_id': ObjectId(animal_id)}
+        )
+        if my_animal is None:
             return return_error(404)
-        return jsonify(animals[animal_id])
+        del my_animal['_id']
+        return jsonify(my_animal)
     elif request.method == 'PUT':
         # This should update an existing animal with a new animal.
         # The animal to be updated should be identified by the
@@ -78,7 +84,10 @@ def handle_animal(animal_id):
         #
         # If there is no matching animal, return a 404
         # or 'NotFoundError' using the return_error function
-        if animal_id not in animals:
+        my_animal = mongo_database.animals.find_one(
+            {'_id': ObjectId(animal_id)}
+        )
+        if my_animal is None:
             return return_error(404)
         # The new animal comes from the 'body' of the request
         # and can be retrieved using 'request.get_json()'
@@ -91,22 +100,27 @@ def handle_animal(animal_id):
             # the return_error method e.g. 'return return_error(400)'
             return return_error(400)
 
-        animals[animal_id] = updated_animal
+        mongo_database.animals.update_one(
+            {'_id': ObjectId(animal_id)},
+            {'$set': updated_animal}
+        )
         return return_empty_success() # This returns the 200 Success Message
     elif request.method == 'DELETE':
-        # This should delete an existing animal from the
-        # animals dictionary.
-        # The animal to be updated should be identified by the
+        # This should delete an existing animal from mongodb
+        # The animal to be deleted should be identified by the
         # animal_id.
         #
         # If there is no matching animal, return a 404
         # or 'NotFoundError' using the return_error function
-        if animal_id not in animals:
+        my_animal = mongo_database.animals.find_one(
+            {'_id': ObjectId(animal_id)}
+        )
+        if my_animal is None:
             return return_error(404)
-        #
-        # If there is a match and the animal is deleted
-        del animals[animal_id]
-        # call 'return return_empty_success()'
+
+        mongo_database.animals.remove(
+            {'_id': ObjectId(animal_id)}
+        )
         return return_empty_success()
 
 @app.route('/', methods = ['GET'])
@@ -129,7 +143,7 @@ def get_webpage():
                     $("#animals").empty();
                     $("#animals").append(`
                         <tr>
-                            <th> KEY </th>
+                            <th> ID </th>
                             <td> species </td>
                             <td> name </td>
                             <td> eats </td>
@@ -206,6 +220,12 @@ def get_webpage():
     <script type="text/javascript">
     </script>
     '''
+    db_animals = [animal for animal in mongo_database.animals.find()]
+    animals = {}
+    for animal in db_animals:
+        animal_id = str(animal['_id'])
+        del animal['_id']
+        animals[animal_id] = animal
     return render_template_string(html, animals=animals)
 
 if __name__ == '__main__':
