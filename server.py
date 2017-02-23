@@ -129,11 +129,19 @@ def handle_animal(animal_id):
 
 @app.route('/species/', methods = ['GET'])
 def handle_species():
-    animals = get_all_animals()
-    species = list() # You could also write "species = []"
-    for animal in animals.values():
-        if animal['species'] not in species:
-            species.append(animal['species'])
+    # Challenge:
+    # 1) Get all of the animals
+    # 2) Build a list of all species with no duplicates.
+    species = []
+    # To add to the species list, use:
+    # species.append(thing_to_append)
+    #
+    # Each animal dictionary has the property:
+    # animal['species']
+    #
+    # To iterate over a list of animals, use:
+    # for animal in animals:
+    #     do_something()
     return jsonify(species)
 
 @app.route('/', methods = ['GET'])
