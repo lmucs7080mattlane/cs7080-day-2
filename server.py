@@ -34,15 +34,19 @@ def return_error(code):
 def return_empty_success():
     return return_error(200)
 
+def get_all_animals():
+    db_animals = [animal for animal in mongo_database.animals.find()]
+    animals = {}
+    for animal in db_animals:
+        animal_id = str(animal['_id'])
+        del animal['_id']
+        animals[animal_id] = animal
+    return animals
+
 @app.route('/animals/', methods = ['GET', 'POST'])
 def handle_animals():
     if request.method == 'GET':
-        db_animals = [animal for animal in mongo_database.animals.find()]
-        animals = {}
-        for animal in db_animals:
-            animal_id = str(animal['_id'])
-            del animal['_id']
-            animals[animal_id] = animal
+        animals = get_all_animals()
         return jsonify(animals)
 
     elif request.method == 'POST':
@@ -123,6 +127,15 @@ def handle_animal(animal_id):
         )
         return return_empty_success()
 
+@app.route('/species/', methods = ['GET'])
+def handle_species():
+    animals = get_all_animals()
+    species = list() # You could also write "species = []"
+    for animal in animals.values():
+        if animal['species'] not in species:
+            species.append(animal['species'])
+    return jsonify(species)
+
 @app.route('/', methods = ['GET'])
 def get_webpage():
     html = '''
@@ -136,7 +149,7 @@ def get_webpage():
     <script type="text/javascript">
         $(function() {
             // Once every 500 milliseconds,
-            // call GET /animals/ and update
+            // call GET /animals/ and GET /SPECIES and update
             // the table caled 'animals'
             var update_table = function() {
                 $.getJSON($SCRIPT_ROOT + '/animals/', {}, function(data) {
@@ -159,7 +172,23 @@ def get_webpage():
                             </tr>
                         `);
                     }
-                    setTimeout(update_table, 500);
+
+                    $.getJSON($SCRIPT_ROOT + '/species/', {}, function(data) {
+                        $("#species").empty();
+                        var $table = `<tr>
+                                <th> Species: </th>`;
+                        for (var key in data){
+                            $table = $table + `
+                                <td> ` + data[key] + ` </td>
+                            `;
+                        }
+                        $table = $table + `
+                                </tr>
+                        `
+                        $("#species").append($table);
+
+                        setTimeout(update_table, 500);
+                    });
                 });
             };
             setTimeout(update_table, 500);
@@ -210,23 +239,22 @@ def get_webpage():
     <h1>Current Animals</h1>
     <p>
     Every 0.5 seconds (or 500ms) the update_table javascript function is called.
-    This function empties the table of all contents and then calls the
-    GET /animals/ route. It then generates a whole new table based on what
-    animals were received in the GET /animals/ response.
+    This function empties the tables of all contents and then calls the
+    GET /animals/ and GET /species/ route. It then generates whole new tables
+    based on what animals and species received in the
+    GET /animals/ and GET /species/ response.
     </p>
 
     <table id="animals"> </table>
+    <br/>
+
+    <h1>Current Species</h1>
+    <table id="species"> </table>
 
     <script type="text/javascript">
     </script>
     '''
-    db_animals = [animal for animal in mongo_database.animals.find()]
-    animals = {}
-    for animal in db_animals:
-        animal_id = str(animal['_id'])
-        del animal['_id']
-        animals[animal_id] = animal
-    return render_template_string(html, animals=animals)
+    return render_template_string(html)
 
 if __name__ == '__main__':
     app.run()
