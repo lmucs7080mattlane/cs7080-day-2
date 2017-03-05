@@ -65,13 +65,15 @@ def handle_animals():
             # the return_error method e.g. 'return return_error(400)'
             return return_error(400)
 
-        # Insert the new animal into the database animals collection
+        # TODO Challenge: Insert the new animal into the database animals collection
         # The insert_one method will be your friend here.
         # Note: insert_one returns the inserted object's '_id' field
         #       this would be good to return as the object's id.
-        result = mongo_animals_collection.insert_one(my_new_animal)
-
-        return jsonify(str(result.inserted_id))
+        #       However, you will need to the convert the _id field from
+        #       the ObjectId type to a string type using the str() function
+        #       Once converted to a string, you need to remember to jsonify
+        #       the string.
+        raise NotImplementedError('You should probably implement this')
 
 @app.route('/animals/<animal_id>', methods = ['GET', 'PUT', 'DELETE'])
 def handle_animal(animal_id):
@@ -80,20 +82,31 @@ def handle_animal(animal_id):
         # animal from mongodb.
         # If there is no matching animal, return a 404
         # or 'NotFoundError' using the return_error function
-        my_animal = mongo_animals_collection.find_one(
-            {'_id': ObjectId(animal_id)}
-        )
-        if my_animal is None:
-            return return_error(404)
-        del my_animal['_id']
-        return jsonify(my_animal)
+
+        # TODO Challenge: Find the animal in the database using the find_one method
+        # and the '_id' property.
+        # Note: You will need to convert the animal_id, which is a string, into
+        #       an ObjectId type, which is the type of '_id'. For more details, see:
+        #       http://api.mongodb.com/python/current/tutorial.html#querying-by-objectid
+        raise NotImplementedError('You should probably implement this')
+
+        # TODO remember to return a 404 if no animal is found in the database.
+        my_animal = None # TODO delete this line
+
+        del my_animal['_id'] # Keep this line
+
+        # TODO return the jsonify'd my_animal
+
     elif request.method == 'PUT':
         # This should update an existing animal with a new animal.
         # The animal to be updated should be identified by the
         # animal_id.
-        my_animal = mongo_animals_collection.find_one(
-            {'_id': ObjectId(animal_id)}
-        )
+
+        # TODO Challenge: Find the animal in the database using the find_one method
+        # and the '_id' property.
+        raise NotImplementedError()
+
+
         if my_animal is None:
             # If there is no matching animal, return a 404
             # or 'NotFoundError' using the return_error function
@@ -109,34 +122,39 @@ def handle_animal(animal_id):
             # the return_error method e.g. 'return return_error(400)'
             return return_error(400)
 
-        mongo_animals_collection.update_one(
-            {'_id': ObjectId(animal_id)},
-            {'$set': updated_animal}
-        )
+        # TODO Challenge: Update the animal in the database using the update_one
+        # method and the '_id' property.
+        # http://api.mongodb.com/python/current/api/pymongo/collection.html?highlight=update#pymongo.collection.Collection.update_one
+        raise NotImplementedError()
+
         return return_empty_success() # This returns the 200 Success Message
     elif request.method == 'DELETE':
         # This should delete an existing animal from mongodb
         # The animal to be deleted should be identified by the
         # animal_id.
-        #
+
+        # TODO Challenge: Find the animal in the database using the find_one method
+        # and the '_id' property.
+        raise NotImplementedError()
+
         # If there is no matching animal, return a 404
         # or 'NotFoundError' using the return_error function
-        my_animal = mongo_animals_collection.find_one(
-            {'_id': ObjectId(animal_id)}
-        )
         if my_animal is None:
             return return_error(404)
 
-        mongo_animals_collection.remove(
-            {'_id': ObjectId(animal_id)}
-        )
+
+        # TODO Challenge: Remove the animal in the database using the remove method
+        # and the '_id' property.
+        raise NotImplementedError()
+
         return return_empty_success()
 
 @app.route('/species/', methods = ['GET'])
 def handle_species():
-    # Challenge:
+    # TODO Challenge:
     # 1) Get all of the animals
     # 2) Build a list of all species with no duplicates.
+
     species = []
     # To add to the species list, use:
     # species.append(thing_to_append)
