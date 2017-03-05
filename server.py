@@ -67,9 +67,10 @@ def handle_animals():
 
         # TODO Challenge: Insert the new animal into the database animals collection
         # The insert_one method will be your friend here.
-        # Note: insert_one returns the inserted object's '_id' field
-        #       this would be good to return as the object's id.
-        #       However, you will need to the convert the _id field from
+        # Note: insert_one returns an object with an 'inserted_id' property,
+        #       which is the inserted object's '_id' field.
+        #       This would be good to return as the object's id.
+        #       However, you will need to the convert the property field from
         #       the ObjectId type to a string type using the str() function
         #       Once converted to a string, you need to remember to jsonify
         #       the string.
