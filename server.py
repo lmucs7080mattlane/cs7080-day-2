@@ -6,12 +6,15 @@ app = Flask(__name__)
 
 # http://docs.mongodb.com/getting-started/python/client/
 mongo_database = None
+mongo_animals_collection = None
 def connect_to_mongo():
     global mongo_database
+    global mongo_animals_collection
     client = MongoClient('mongodb://mongo:27017/animals')
     # Cheap and easy command to test the connection
     client.admin.command('ismaster')
     mongo_database = client.get_default_database()
+    mongo_animals_collection = mongo_database.animals
 connect_to_mongo()
 
 
@@ -35,7 +38,7 @@ def return_empty_success():
     return return_error(200)
 
 def get_all_animals():
-    db_animals = [animal for animal in mongo_database.animals.find()]
+    db_animals = [animal for animal in mongo_animals_collection.find()]
     animals = {}
     for animal in db_animals:
         animal_id = str(animal['_id'])
@@ -50,8 +53,7 @@ def handle_animals():
         return jsonify(animals)
 
     elif request.method == 'POST':
-        # This should insert a new animal with a new
-        # animal id
+        # This should insert a new animal and return a new animal id
         # The new animal comes from the 'body' of the request
         # and can be retrieved using 'request.get_json()'
         my_new_animal = request.get_json()
@@ -63,7 +65,11 @@ def handle_animals():
             # the return_error method e.g. 'return return_error(400)'
             return return_error(400)
 
-        result = mongo_database.animals.insert_one(my_new_animal)
+        # Insert the new animal into the database animals collection
+        # The insert_one method will be your friend here.
+        # Note: insert_one returns the inserted object's '_id' field
+        #       this would be good to return as the object's id.
+        result = mongo_animals_collection.insert_one(my_new_animal)
 
         return jsonify(str(result.inserted_id))
 
@@ -74,7 +80,7 @@ def handle_animal(animal_id):
         # animal from mongodb.
         # If there is no matching animal, return a 404
         # or 'NotFoundError' using the return_error function
-        my_animal = mongo_database.animals.find_one(
+        my_animal = mongo_animals_collection.find_one(
             {'_id': ObjectId(animal_id)}
         )
         if my_animal is None:
@@ -85,13 +91,12 @@ def handle_animal(animal_id):
         # This should update an existing animal with a new animal.
         # The animal to be updated should be identified by the
         # animal_id.
-        #
-        # If there is no matching animal, return a 404
-        # or 'NotFoundError' using the return_error function
-        my_animal = mongo_database.animals.find_one(
+        my_animal = mongo_animals_collection.find_one(
             {'_id': ObjectId(animal_id)}
         )
         if my_animal is None:
+            # If there is no matching animal, return a 404
+            # or 'NotFoundError' using the return_error function
             return return_error(404)
         # The new animal comes from the 'body' of the request
         # and can be retrieved using 'request.get_json()'
@@ -104,7 +109,7 @@ def handle_animal(animal_id):
             # the return_error method e.g. 'return return_error(400)'
             return return_error(400)
 
-        mongo_database.animals.update_one(
+        mongo_animals_collection.update_one(
             {'_id': ObjectId(animal_id)},
             {'$set': updated_animal}
         )
@@ -116,13 +121,13 @@ def handle_animal(animal_id):
         #
         # If there is no matching animal, return a 404
         # or 'NotFoundError' using the return_error function
-        my_animal = mongo_database.animals.find_one(
+        my_animal = mongo_animals_collection.find_one(
             {'_id': ObjectId(animal_id)}
         )
         if my_animal is None:
             return return_error(404)
 
-        mongo_database.animals.remove(
+        mongo_animals_collection.remove(
             {'_id': ObjectId(animal_id)}
         )
         return return_empty_success()
