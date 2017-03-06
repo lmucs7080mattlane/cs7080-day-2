@@ -221,13 +221,13 @@ def get_webpage():
                                 })
 
                                 if (sensor_data_items.length > 0) {
-                                    first_sensor_data_items[0] = sensor_data_items[0].sensor_data + ' at ' + sensor_data_items[0].timestamp;
+                                    first_sensor_data_items[0] = JSON.stringify(sensor_data_items[0].sensor_data) + ' at ' + sensor_data_items[0].timestamp;
                                 }
                                 if (sensor_data_items.length >= 2) {
-                                    first_sensor_data_items[1] = sensor_data_items[1].sensor_data + ' at ' + sensor_data_items[1].timestamp;
+                                    first_sensor_data_items[1] = JSON.stringify(sensor_data_items[1].sensor_data) + ' at ' + sensor_data_items[1].timestamp;
                                 }
                                 if (sensor_data_items.length >= 3) {
-                                    first_sensor_data_items[2] = sensor_data_items[2].sensor_data + ' at ' + sensor_data_items[2].timestamp;
+                                    first_sensor_data_items[2] = JSON.stringify(sensor_data_items[2].sensor_data) + ' at ' + sensor_data_items[2].timestamp;
                                 }
 
                                 $("#devices").append(`
@@ -248,10 +248,10 @@ def get_webpage():
                             create_sensor_data_function(device_key, device_data[device_key].device_name)
                         );
                     }
-                    setTimeout(update_connected_devices_table, 500);
+                    setTimeout(update_connected_devices_table, 2000);
                 });
             };
-            setTimeout(update_connected_devices_table, 500);
+            setTimeout(update_connected_devices_table, 2000);
 
 
             $( "#new_credentials_form" ).submit(function(event) {
