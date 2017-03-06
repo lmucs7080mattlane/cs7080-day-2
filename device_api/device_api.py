@@ -37,21 +37,18 @@ def handle_login():
     if 'device_name' not in login_credentials or 'password' not in login_credentials:
         return return_error(400)
 
-    result = mongo_credentials_collection.find_one(
-        {
-            'device_name': login_credentials['device_name'],
-            'password': login_credentials['password']
-        }
-    )
-    if result is None:
-        # There were no matching credentials for this device, the
-        # device has the wrong login details
-        return return_error(401) # Unauthorised error code
 
-    result = mongo_session_collection.insert_one({
-        'device_name': login_credentials['device_name']
-    })
-    return jsonify(str(result.inserted_id))
+    # TODO Challenge. The mongo_credentials_collection stores JSON documents
+    # with two properties: 'device_name' and 'password'. See if you can find
+    # a match to the login_credentials we received
+
+    # TODO If you cannot find a match, return a 401 Unauthorised error
+
+    # TODO Otherwise, insert a new JSON document in the mongo_session_collection
+    # with a single property 'device_name'.
+    # Return the 'inserted_id' of the inserted document, the connected
+    # device will use this id as it's session id.
+    raise NotImplementedError('You should probably implement this')
 
 @app.route('/sensor_data/', methods = ['POST'])
 def handle_sensor_data():
@@ -61,25 +58,17 @@ def handle_sensor_data():
        or 'sensor_data' not in request_body:
         return return_error(400)
 
-    result = mongo_session_collection.find_one({
-        '_id': ObjectId(request_body['session_id']),
-        'device_name': request_body['device_name']
-    })
-    if result is None:
-        # There were no matching session for this session_id, the
-        # device has the wrong session details
-        return return_error(401) # Unauthorised error code
+    # TODO Challenge: First verify that the session_id and device_name
+    # properties of the request body match a document in mongo_session_collection
 
-    result = mongo_sensor_data_collection.insert_one(
-        {
-            'device_name': request_body['device_name'],
-            'sensor_data': request_body['sensor_data'],
-            'timestamp': datetime.datetime.now()
-        }
-    )
-    return jsonify(str(result.inserted_id))
+    # TODO If you cannot find a matching session, return a 401 Unauthorised error.
+
+    # TODO Otherwise, insert a new document into the mongo_sensor_data_collection
+    # with the properties 'device_name', 'sensor_data' and 'timestamp'
+    # You can get the current timestamp by calling datetime.datetime.now()
+
+    # TODO return the new document's inserted_id
 
 
 if __name__ == '__main__':
-    print('running app')
     app.run()
