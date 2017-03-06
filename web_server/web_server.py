@@ -248,7 +248,7 @@ def get_webpage():
                             create_sensor_data_function(device_key, device_data[device_key].device_name)
                         );
                     }
-                    setTimeout(update_connected_devices_table, 500);
+                    setTimeout(update_connected_devices_table, 2000);
                 });
             };
             setTimeout(update_connected_devices_table, 500);
