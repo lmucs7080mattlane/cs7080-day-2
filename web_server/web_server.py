@@ -194,21 +194,59 @@ def get_webpage():
             setTimeout(update_device_credentials_table, 500);
 
             var update_connected_devices_table = function() {
-                $.getJSON($SCRIPT_ROOT + '/connected_devices/', {}, function(data) {
+                $.getJSON($SCRIPT_ROOT + '/connected_devices/', {}, function(device_data) {
                     $("#devices").empty();
                     $("#devices").append(`
                         <tr>
                             <th> Session Id </th>
                             <td> Device Name </td>
+                            <td> Last Three Sensor Readings </td>
+                            <td> </td>
+                            <td> </td>
                         </tr>
                     `);
-                    for (var key in data){
-                        $("#devices").append(`
-                            <tr>
-                                <th> ` + key + `</th>
-                                <td> ` + data[key].device_name +` </td>
-                            </tr>
-                        `);
+
+                    $("#sensor_data").empty();
+
+                    for (var device_key in device_data){
+                        function create_sensor_data_function(device_key, device_name){
+                            return function(sensor_data) {
+                                var first_sensor_data_items = ['','',''];
+                                var sensor_data_items = [];
+                                for (key in sensor_data) {
+                                    sensor_data_items.push(sensor_data[key])
+                                }
+                                sensor_data_items.sort(function(a, b) {
+                                    return a-b;
+                                })
+
+                                if (sensor_data_items.length > 0) {
+                                    first_sensor_data_items[0] = sensor_data_items[0].sensor_data + ' at ' + sensor_data_items[0].timestamp;
+                                }
+                                if (sensor_data_items.length >= 2) {
+                                    first_sensor_data_items[1] = sensor_data_items[1].sensor_data + ' at ' + sensor_data_items[1].timestamp;
+                                }
+                                if (sensor_data_items.length >= 3) {
+                                    first_sensor_data_items[2] = sensor_data_items[2].sensor_data + ' at ' + sensor_data_items[2].timestamp;
+                                }
+
+                                $("#devices").append(`
+                                    <tr>
+                                        <th> ` + device_key + `</th>
+                                        <td> ` + device_name +` </td>
+                                        <td> ` + first_sensor_data_items[0] +` </td>
+                                        <td> ` + first_sensor_data_items[1] +` </td>
+                                        <td> ` + first_sensor_data_items[2] +` </td>
+                                    </tr>
+                                `);
+                            };
+                        }
+
+                        $.getJSON(
+                            $SCRIPT_ROOT + '/connected_devices/' + device_key + '/sensor_data/',
+                            {},
+                            create_sensor_data_function(device_key, device_data[device_key].device_name)
+                        );
                     }
                     setTimeout(update_connected_devices_table, 500);
                 });

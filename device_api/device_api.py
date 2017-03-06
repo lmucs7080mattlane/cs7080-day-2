@@ -1,3 +1,4 @@
+import datetime
 from flask import Flask, request, abort, jsonify, render_template_string
 from pymongo import MongoClient
 from bson.objectid import ObjectId
@@ -72,7 +73,8 @@ def handle_sensor_data():
     result = mongo_sensor_data_collection.insert_one(
         {
             'device_name': request_body['device_name'],
-            'sensor_data': request_body['sensor_data']
+            'sensor_data': request_body['sensor_data'],
+            'timestamp': datetime.datetime.now()
         }
     )
     return jsonify(str(result.inserted_id))
