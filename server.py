@@ -11,25 +11,29 @@ animals = {
     generate_animal_id(): {
         'name': 'dave',
         'species': 'deer',
-        'eats': 'grass'
+        'eats': 'grass',
+        'colour': 'red'
     },
     generate_animal_id(): {
         'name': 'bob',
         'species': 'bear',
-        'eats': 'salmon'
+        'eats': 'salmon',
+        'colour': 'brown'
     }
 }
 
 def is_animal(possible_animal):
     if type(possible_animal) != dict:
         return False
-    if len(possible_animal.keys()) != 3:
+    if len(possible_animal.keys()) != 4:
         return False
     if 'name' not in possible_animal:
         return False
     if 'species' not in possible_animal:
         return False
     if 'eats' not in possible_animal:
+        return False
+    if 'colour' not in possible_animal:
         return False
     return True
 
@@ -133,6 +137,7 @@ def get_webpage():
                             <td> species </td>
                             <td> name </td>
                             <td> eats </td>
+                            <td> colour </td>
                         </tr>
                     `);
                     for (var key in data){
@@ -142,6 +147,8 @@ def get_webpage():
                                 <td> ` + data[key].species +` </td>
                                 <td> ` + data[key].name +` </td>
                                 <td> ` + data[key].eats +` </td>
+                                <td> ` + data[key].colour +` </td>
+
                             </tr>
                         `);
                     }
@@ -162,6 +169,7 @@ def get_webpage():
                 var name = $form.find( "input[name='name']" ).val();
                 var species = $form.find( "input[name='species']" ).val();
                 var eats = $form.find( "input[name='eats']" ).val();
+                var colour = $form.find( "input[name='colour']" ).val();
 
                 // The REST API address
                 var url = "/animals/"
@@ -174,7 +182,8 @@ def get_webpage():
                         data: JSON.stringify({
                             name: name,
                             species: species,
-                            eats: eats
+                            eats: eats,
+                            colour : colour
                         }),
                         contentType: "application/json; charset=utf-8",
                         dataType: "json",
@@ -190,6 +199,8 @@ def get_webpage():
         Name:<input type="text" name="name" placeholder="name of animal"><br/>
         Species:<input type="text" name="species" placeholder="species"><br/>
         Eats:<input type="text" name="eats" placeholder="what food the animal eats"><br/>
+        Colour:<input type="text" name="colour" placeholder="What colour is it ?"><br/>
+
         <input type="submit" value="add animal">
     </form>
 
