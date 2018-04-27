@@ -44,20 +44,16 @@ def handle_animals():
     if request.method == 'GET':
         return jsonify(animals)
     elif request.method == 'POST':
-        # This should insert a new animal with a new
-        # animal id (created using generate_animal_id) and
-        # then return the animal_id to the requester
-        #
-        # The new animal comes from the 'body' of the request
-        # and can be retrieved using 'request.get_json()'
-        #
-        # You can check if it is a valid animal using the
-        # function is_animal(possible_animal)
-        #
-        # If the request did not contain a valid animal,
-        # return a 400 or 'BadRequest' error code using
-        # the return_error method e.g. 'return return_error(400)'
-        raise NotImplementedError()
+
+        new_animal_id = generate_animal_id()
+
+        my_new_animal = request.get_json()
+
+        if not is_animal(my_new_animal):
+            return return_error(400)
+        animals[new_animal_id] = my_new_animal
+
+        return new_animal_id
 
 @app.route('/animals/<animal_id>', methods = ['GET', 'PUT', 'DELETE'])
 def handle_animal(animal_id):
