@@ -84,7 +84,7 @@ def add_entry():
     db.execute('insert into entries (title, text) values (?, ?)',
                [request.form['title'], request.form['text']])
     db.commit()
-    flash('New entry was successfully posted')
+    flash('Your entry has been added!!')
     return redirect(url_for('show_entries'))
 
 
@@ -106,5 +106,5 @@ def login():
 @app.route('/logout')
 def logout():
     session.pop('logged_in', None)
-    flash('You were logged out')
+    flash('You have been logged out')
     return redirect(url_for('show_entries'))
