@@ -169,7 +169,22 @@ def handle_species():
     for animal in all_animals.values():
         if animal['species'] not in species:
             species.append(animal['species'])
+
     return jsonify(species)
+
+@app.route('/species/<species_id>/members', methods = ['GET'])
+def handle_species_id_members(species_id):
+    # this function will find all animal names
+    # where those animals are all of the type
+    # 'species_id'
+    all_animals = get_all_animals()
+
+    animal_names = []
+    for animal in all_animals.values():
+        if animal['species'] == species_id:
+            animal_names.append(animal['name'])
+
+    return jsonify(animal_names)
 
 @app.route('/', methods = ['GET'])
 def get_webpage():
