@@ -74,7 +74,10 @@ def handle_animals():
         #       the ObjectId type to a string type using the str() function
         #       Once converted to a string, you need to remember to jsonify
         #       the string.
-        raise NotImplementedError('You should probably implement this')
+        result =  mongo_animals_collection.insert_one(
+            my_new_animal
+        )
+        return jsonify(str(result.inserted_id))
 
 @app.route('/animals/<animal_id>', methods = ['GET', 'PUT', 'DELETE'])
 def handle_animal(animal_id):
@@ -89,7 +92,9 @@ def handle_animal(animal_id):
         # Note: You will need to convert the animal_id, which is a string, into
         #       an ObjectId type, which is the type of '_id'. For more details, see:
         #       http://api.mongodb.com/python/current/tutorial.html#querying-by-objectid
-        raise NotImplementedError('You should probably implement this')
+        mongo_animals_collection.find_one(
+            {'_id' : ???}
+        )
 
         # TODO remember to return a 404 if no animal is found in the database.
         my_animal = None # TODO delete this line
