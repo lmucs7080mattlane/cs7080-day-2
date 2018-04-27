@@ -187,6 +187,20 @@ def handle_species():
     #     do_something()
     return jsonify(species)
 
+@app.route('/species/<species_id>/members', methods = ['GET'])
+def handle_species_id_members(species_id):
+
+
+    all_animals = get_all_animals()
+
+    animal_name = []
+    for animals in all_animals.values():
+        if animals['species'] == species_id:
+            animal_name.append(animals['name'])
+
+
+    return jsonify(animal_name)
+
 @app.route('/', methods = ['GET'])
 def get_webpage():
     html = '''
