@@ -70,7 +70,9 @@ def handle_animal(animal_id):
     if request.method == 'GET':
         # This should return the single animal from the
         # animals dictionary that has the same animal_id.
-        #
+        if animal_id not in animals:
+            return return_error(404)
+        return jsonify(animals[animal_id])
         # If there is no matching animal, return a 404
         # or 'NotFoundError' using the return_error function
         raise NotImplementedError()
@@ -81,17 +83,24 @@ def handle_animal(animal_id):
         #
         # If there is no matching animal, return a 404
         # or 'NotFoundError' using the return_error function
-        #
+        if animal_id not in animals:
+            return return_error(404)
         # The new animal comes from the 'body' of the request
         # and can be retrieved using 'request.get_json()'
-        #
+        updated_animal = request.get_json()
         # You can check if it is a valid animal using the
         # function is_animal(possible_animal)
-        #
+        if not is_animal(updated_animal):
+            # If the request did not contain a valid animal,
+            # return a 400 or 'BadRequest' error code using
+            # the return_error method e.g. 'return return_error(400)'
+            return return_error(400)
         # If the request did not contain a valid animal,
         # return a 400 or 'BadRequest' error code using
         # the return_error method e.g. 'return return_error(400)'
-        raise NotImplementedError()
+        animals[animal_id] = updated_animal
+        return return_empty_success()
+
     elif request.method == 'DELETE':
         # This should delete an existing animal from the
         # animals dictionary.
@@ -100,10 +109,13 @@ def handle_animal(animal_id):
         #
         # If there is no matching animal, return a 404
         # or 'NotFoundError' using the return_error function
-        #
+        if animal_id not in animals:
+            return return_error(404)
         # If there is a match and the animal is deleted
         # call 'return return_empty_success()'
-        raise NotImplementedError()
+        del animals[animal_id]
+
+        return return_empty_success()
 
 @app.route('/', methods = ['GET'])
 def get_webpage():
