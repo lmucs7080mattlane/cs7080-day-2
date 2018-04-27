@@ -164,19 +164,18 @@ def handle_animal(animal_id):
 
         return return_empty_success()
 
-@app.route('/species/', methods = ['GET'])
-def handle_species():
-    # TODO Challenge:
-    # 1) Get all of the animals
-    # 2) Build a list of all species with no duplicates.
-
+@app.route('/species/<species_id>/members', methods = ['GET'])
+def handle_species_id_members(species_id):
+    #this function will find all animal names
+    #where that those animals are all of the types
+    #'species_id'
     all_animals = get_all_animals()
 
 
-    species = []
+    animal_names = []
     for animal in all_animals.values():
-        if animal['species'] not in species:
-            species.append(animal['species'])
+        if animal['species'] == species_id:
+            animal_names.append(animal['species'])
 
 
     return jsonify(species)
